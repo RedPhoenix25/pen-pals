@@ -276,7 +276,7 @@ function ActColumn({
             <label style={{ fontSize: 10, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Status</label>
             <CustomSelect
               value={status}
-              onChange={setStatus}
+              onChange={(val) => setStatus(val as Status)}
               options={STATUSES.map(s => ({ value: s, label: s }))}
               style={{ fontSize: 11 }}
             />
@@ -387,7 +387,7 @@ function EditEventModal({ event, acts, onClose, onSave, onDelete }: EditEventMod
               <label style={{ fontSize: 10, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Status</label>
               <CustomSelect
                 value={status}
-                onChange={setStatus}
+                onChange={(val) => setStatus(val as Status)}
                 options={STATUSES.map(s => ({ value: s, label: s }))}
                 style={{ fontSize: 12 }}
               />
