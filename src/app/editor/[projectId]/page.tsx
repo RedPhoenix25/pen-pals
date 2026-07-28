@@ -7,7 +7,7 @@ import { Editor } from '../../../components/Editor';
 import { KanbanBoard } from '../../../components/KanbanBoard';
 import { ProgressBar } from '../../../components/ProgressBar';
 import { ExportMenu } from '../../../components/ExportMenu';
-import { PanelLeftClose, PanelRightClose, Bell, Settings } from 'lucide-react';
+import { PanelLeftClose, PanelRightClose, Settings } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
 import { useSession } from 'next-auth/react';
 import { ProjectSettingsModal } from '../../../components/ProjectSettingsModal';
@@ -27,7 +27,7 @@ export default function EditorPage() {
 
   useEffect(() => {
     if (projectId) refreshData(projectId);
-  }, [projectId]);
+  }, [projectId, refreshData]);
   return (
     <main style={{ display: 'flex', height: '100vh', width: '100vw' }}>
 

@@ -24,12 +24,12 @@ import { VersionHistoryPanel } from './VersionHistoryPanel';
 const COLORS = ['#ef4444', '#f97316', '#f59e0b', '#84cc16', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#d946ef', '#f43f5e'];
 
 export function Editor({ projectId }: { projectId?: string }) {
-  const { activeChapterId, currentUser, project } = useAppContext();
+  const { activeChapterId, currentUser } = useAppContext();
   
   // Stable user color derived from user id so it's consistent across sessions
   const userColor = currentUser
     ? COLORS[currentUser.id.charCodeAt(currentUser.id.length - 1) % COLORS.length]
-    : COLORS[Math.floor(Math.random() * COLORS.length)];
+    : COLORS[0]; // fallback to first color instead of impure Math.random()
   
   const userName = currentUser?.name || 'Anonymous';
   // Liveblocks room scoped to project + chapter to avoid cross-project collisions
@@ -48,15 +48,16 @@ export function Editor({ projectId }: { projectId?: string }) {
   return (
     <RoomProvider id={roomId} initialPresence={{ cursor: null }}>
       <ClientSideSuspense fallback={<div style={{ padding: '80px 40px', color: 'var(--text-secondary)' }}>Connecting to collaborative room...</div>}>
-        <CollaborativeEditor key={activeChapterId} userName={userName} userColor={userColor} userImage={currentUser?.image} projectId={projectId} />
+        <CollaborativeEditor key={activeChapterId} userName={userName} userColor={userColor} projectId={projectId} />
       </ClientSideSuspense>
     </RoomProvider>
   );
 }
 
-function CollaborativeEditor({ userName, userColor, userImage, projectId }: { userName: string, userColor: string, userImage?: string, projectId?: string }) {
+function CollaborativeEditor({ userName, userColor, projectId }: { userName: string, userColor: string, projectId?: string }) {
   const room = useRoom();
   const [doc, setDoc] = useState<Y.Doc>();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [provider, setProvider] = useState<any>();
 
   useEffect(() => {
@@ -65,6 +66,7 @@ function CollaborativeEditor({ userName, userColor, userImage, projectId }: { us
     const yProvider = new LiveblocksYjsProvider(room, yDoc);
     
     if (isMounted) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDoc(yDoc);
       setProvider(yProvider);
     }
@@ -120,6 +122,7 @@ function CollaborativeEditor({ userName, userColor, userImage, projectId }: { us
   return <TiptapEditor key={doc.guid} doc={doc} provider={provider} userName={userName} userColor={userColor} projectId={projectId} />;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function TiptapEditor({ doc, provider, userName, userColor, projectId }: { doc: Y.Doc, provider: any, userName: string, userColor: string, projectId?: string }) {
   const { chapters, activeChapterId, setChapters, currentUser } = useAppContext();
   const activeChapter = chapters.find(c => c._id === activeChapterId);
@@ -128,6 +131,7 @@ function TiptapEditor({ doc, provider, userName, userColor, projectId }: { doc: 
   const [showVersionHistory, setShowVersionHistory] = useState(false);
   const [commentInput, setCommentInput] = useState('');
   const [showCommentInput, setShowCommentInput] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [comments, setComments] = useState<any[]>([]);
 
   useEffect(() => {
@@ -230,7 +234,7 @@ function TiptapEditor({ doc, provider, userName, userColor, projectId }: { doc: 
             body: JSON.stringify({ content: html })
           });
           setSaveStatus('Saved just now');
-        } catch (e) {
+        } catch {
           setSaveStatus('Failed to save');
         }
       }, 1000);

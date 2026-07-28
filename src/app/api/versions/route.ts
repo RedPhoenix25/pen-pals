@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import dbConnect from '@/lib/mongodb';
 import VersionModel from '@/lib/models/Version';
-import ChapterModel from '@/lib/models/Chapter';
 
 // GET /api/versions?chapterId=... — list versions for a chapter
 export async function GET(req: NextRequest) {

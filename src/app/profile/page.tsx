@@ -65,24 +65,23 @@ export default function ProfilePage() {
   };
 
   useEffect(() => {
-    fetchProfile();
-  }, []);
-
-  const fetchProfile = async () => {
-    try {
-      const res = await fetch('/api/profile');
-      if (res.ok) {
-        const data = await res.json();
-        setProfile(data);
-        setName(data.name || '');
-        setImage(data.image || '');
-      } else if (res.status === 401) {
-        router.push('/login');
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch('/api/profile');
+        if (res.ok) {
+          const data = await res.json();
+          setProfile(data);
+          setName(data.name || '');
+          setImage(data.image || '');
+        } else if (res.status === 401) {
+          router.push('/login');
+        }
+      } finally {
+        setLoading(false);
       }
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+    fetchProfile();
+  }, [router]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,7 +112,7 @@ export default function ProfilePage() {
       } else {
         setMessage({ text: data.error || 'Failed to update profile', type: 'error' });
       }
-    } catch (e) {
+    } catch {
       setMessage({ text: 'An unexpected error occurred', type: 'error' });
     } finally {
       setSaving(false);
@@ -160,6 +159,7 @@ export default function ProfilePage() {
           {/* Avatar Preview */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
             {image ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={image}
                 alt="Avatar Preview"

@@ -37,17 +37,16 @@ export default function DashboardPage() {
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const res = await fetch('/api/projects');
+        if (res.ok) setProjects(await res.json());
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchProjects();
   }, []);
-
-  const fetchProjects = async () => {
-    try {
-      const res = await fetch('/api/projects');
-      if (res.ok) setProjects(await res.json());
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,14 +83,8 @@ export default function DashboardPage() {
   };
 
   const timeAgo = (dateStr: string) => {
-    const diff = Date.now() - new Date(dateStr).getTime();
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
-    if (days > 0) return `${days}d ago`;
-    if (hours > 0) return `${hours}h ago`;
-    if (minutes > 0) return `${minutes}m ago`;
-    return 'Just now';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
   };
 
   return (
@@ -113,6 +106,7 @@ export default function DashboardPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <Link href="/profile" style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none', cursor: 'pointer', padding: '4px 8px', borderRadius: '8px', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-secondary)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
             {session?.user?.image ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={session.user.image}
                 alt={session.user.name || ''}
