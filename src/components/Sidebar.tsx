@@ -29,19 +29,26 @@ export function Sidebar({ isOpen, projectId }: { isOpen: boolean; projectId: str
 
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleAddChapter = async () => {
-    if (!newChapterTitle.trim()) return;
-    const res = await fetch('/api/chapters', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: newChapterTitle, content: '<p></p>', order: chapters.length, projectId })
-    });
-    if (res.ok) {
-      const newChap = await res.json();
-      setChapters([...chapters, newChap]);
-      setActiveChapterId(newChap._id);
-      setIsAddingChapter(false);
-      setNewChapterTitle('');
+    if (!newChapterTitle.trim() || isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      const res = await fetch('/api/chapters', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: newChapterTitle, content: '<p></p>', order: chapters.length, projectId })
+      });
+      if (res.ok) {
+        const newChap = await res.json();
+        setChapters(prev => [...prev, newChap]);
+        setActiveChapterId(newChap._id);
+        setIsAddingChapter(false);
+        setNewChapterTitle('');
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
