@@ -52,7 +52,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       return true;
     },
-    async jwt({ token, user, account }) {
+    async jwt({ token, user }) {
       // On first sign-in, persist the DB _id into the token
       if (user) {
         await dbConnect();

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { X, UserPlus, Trash2, Crown, Edit3 } from 'lucide-react';
+import { X, UserPlus, Trash2, Crown } from 'lucide-react';
 import { ProjectSettings } from '@/context/AppContext';
 import { CustomSelect } from './CustomSelect';
 

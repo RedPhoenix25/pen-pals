@@ -5,8 +5,6 @@ import { useState } from 'react';
 import { useAppContext, Character } from '@/context/AppContext';
 import { CharacterProfileModal } from './CharacterProfileModal';
 
-type Tab = 'drafts' | 'storyboard' | 'characters';
-
 export function Sidebar({ isOpen, projectId }: { isOpen: boolean; projectId: string }) {
   const { 
     chapters, setChapters, activeChapterId, setActiveChapterId,
@@ -24,8 +22,7 @@ export function Sidebar({ isOpen, projectId }: { isOpen: boolean; projectId: str
   
   const [chapterToDelete, setChapterToDelete] = useState<string | null>(null);
 
-  const [isAddingEvent, setIsAddingEvent] = useState(false);
-  const [newEventTitle, setNewEventTitle] = useState('');
+
   
   const [isAddingCharacter, setIsAddingCharacter] = useState(false);
   const [newCharacterName, setNewCharacterName] = useState('');
@@ -83,19 +80,6 @@ export function Sidebar({ isOpen, projectId }: { isOpen: boolean; projectId: str
     });
   };
 
-  const handleAddEvent = async () => {
-    if (!newEventTitle.trim()) return;
-    const res = await fetch('/api/storyboard', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: newEventTitle, description: '', order: storyboardEvents.length, projectId })
-    });
-    if (res.ok) {
-      setStoryboardEvents([...storyboardEvents, await res.json()]);
-      setIsAddingEvent(false);
-      setNewEventTitle('');
-    }
-  };
 
   const handleAddCharacter = async () => {
     if (!newCharacterName.trim()) return;

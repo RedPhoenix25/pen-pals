@@ -7,12 +7,7 @@ export function ProgressBar() {
   const [isEditingTarget, setIsEditingTarget] = useState(false);
   const [targetInput, setTargetInput] = useState('');
 
-  // Update input when project loads
-  useEffect(() => {
-    if (project) {
-      setTargetInput(project.wordCountTarget.toString());
-    }
-  }, [project]);
+  // Input is initialized when editing begins
 
   if (!project) return null;
 
@@ -70,7 +65,7 @@ export function ProgressBar() {
               style={{ width: '40px', background: 'transparent', border: 'none', borderBottom: '1px solid var(--text-secondary)', color: 'var(--text-primary)', padding: '0', fontSize: '10px', textAlign: 'right', outline: 'none' }}
             />
           ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }} onClick={() => setIsEditingTarget(true)} title="Edit Target">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }} onClick={() => { setTargetInput(target.toString()); setIsEditingTarget(true); }} title="Edit Target">
               <span>{target.toLocaleString()}</span>
               <Edit3 size={10} style={{ opacity: 0.6 }} />
             </div>

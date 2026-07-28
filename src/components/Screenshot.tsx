@@ -12,6 +12,7 @@ interface ScreenshotProps {
 export function Screenshot({ src, alt, width, height, fallback, className }: ScreenshotProps) {
   return (
     <div style={{ position: 'relative', width: '100%' }}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={src}
         alt={alt}

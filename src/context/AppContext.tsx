@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
 
 export interface Chapter {
@@ -66,7 +66,7 @@ interface AppContextType {
   project: ProjectSettings | null;
   setProject: React.Dispatch<React.SetStateAction<ProjectSettings | null>>;
   currentWordCount: number;
-  setCurrentWordCount: React.Dispatch<React.SetStateAction<number>>;
+
   activeTab: 'drafts' | 'storyboard' | 'characters';
   setActiveTab: React.Dispatch<React.SetStateAction<'drafts' | 'storyboard' | 'characters'>>;
   currentUser: CurrentUser | null;
@@ -82,7 +82,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [storyboardEvents, setStoryboardEvents] = useState<StoryboardEvent[]>([]);
   const [characters, setCharacters] = useState<Character[]>([]);
   const [project, setProject] = useState<ProjectSettings | null>(null);
-  const [currentWordCount, setCurrentWordCount] = useState<number>(0);
+
   const [activeTab, setActiveTab] = useState<'drafts' | 'storyboard' | 'characters'>('drafts');
 
   const currentUser: CurrentUser | null = session?.user?.id
@@ -121,7 +121,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // Recalculate word count whenever chapters change
-  useEffect(() => {
+  const currentWordCount = useMemo(() => {
     let totalWords = 0;
     chapters.forEach(chap => {
       const text = chap.content.replace(/<[^>]*>?/gm, ' ');
@@ -130,7 +130,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         totalWords += words.length;
       }
     });
-    setCurrentWordCount(totalWords);
+    return totalWords;
   }, [chapters]);
 
   return (
@@ -147,7 +147,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         project,
         setProject,
         currentWordCount,
-        setCurrentWordCount,
+
         activeTab,
         setActiveTab,
         currentUser,
