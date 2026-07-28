@@ -9,9 +9,7 @@ export function middleware(req: NextRequest) {
   const isPublic = pathname === '/' || publicRoutes.some((route) => pathname.startsWith(route));
 
   // Check for the NextAuth session cookie (supports both HTTP and HTTPS deployments)
-  const isAuthenticated = 
-    req.cookies.has('next-auth.session-token') || 
-    req.cookies.has('__Secure-next-auth.session-token');
+  const isAuthenticated = req.cookies.getAll().some(c => c.name.includes('session-token'));
 
   // If the user is NOT logged in, and trying to access a protected route, redirect to login
   if (!isAuthenticated && !isPublic) {
