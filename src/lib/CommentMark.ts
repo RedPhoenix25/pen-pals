@@ -8,7 +8,7 @@ declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     comment: {
       setComment: (commentId: string) => ReturnType;
-      unsetComment: (commentId: string) => ReturnType;
+      unsetComment: () => ReturnType;
     };
   }
 }

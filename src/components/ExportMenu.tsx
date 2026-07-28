@@ -45,7 +45,7 @@ export function ExportMenu() {
     try {
       const sorted = [...chapters].sort((a, b) => a.order - b.order);
       
-      const children: any[] = [];
+      const children: Paragraph[] = [];
       sorted.forEach(chap => {
         children.push(
           new Paragraph({

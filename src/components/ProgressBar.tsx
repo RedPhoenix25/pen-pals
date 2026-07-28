@@ -1,6 +1,6 @@
 import { useAppContext } from '@/context/AppContext';
-import { useEffect, useState } from 'react';
-import { Edit3, CheckCircle2 } from 'lucide-react';
+import { useState } from 'react';
+import { Edit3 } from 'lucide-react';
 
 export function ProgressBar() {
   const { currentWordCount, project, setProject } = useAppContext();

@@ -8,7 +8,7 @@ import { CharacterProfileModal } from './CharacterProfileModal';
 export function Sidebar({ isOpen, projectId }: { isOpen: boolean; projectId: string }) {
   const { 
     chapters, setChapters, activeChapterId, setActiveChapterId,
-    storyboardEvents, setStoryboardEvents,
+
     characters, setCharacters,
     activeTab, setActiveTab
   } = useAppContext();

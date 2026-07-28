@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
-import { Bell, Check, X } from 'lucide-react';
+import { Bell, Check } from 'lucide-react';
 
 interface Notification {
   _id: string;
@@ -18,6 +18,14 @@ export function NotificationDropdown({ onClose, onMarkAllRead }: { onClose: () =
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const res = await fetch('/api/notifications');
+        if (res.ok) setNotifications(await res.json());
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchNotifications();
 
     const handleClick = (e: MouseEvent) => {
@@ -27,16 +35,7 @@ export function NotificationDropdown({ onClose, onMarkAllRead }: { onClose: () =
     };
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
-  }, []);
-
-  const fetchNotifications = async () => {
-    try {
-      const res = await fetch('/api/notifications');
-      if (res.ok) setNotifications(await res.json());
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [onClose]);
 
   const markAllRead = async () => {
     await fetch('/api/notifications', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
@@ -47,12 +46,8 @@ export function NotificationDropdown({ onClose, onMarkAllRead }: { onClose: () =
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const timeAgo = (dateStr: string) => {
-    const diff = Date.now() - new Date(dateStr).getTime();
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(minutes / 60);
-    if (hours > 0) return `${hours}h ago`;
-    if (minutes > 0) return `${minutes}m ago`;
-    return 'Just now';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
   };
 
   return (
