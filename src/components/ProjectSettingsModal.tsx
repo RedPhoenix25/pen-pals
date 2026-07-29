@@ -23,6 +23,7 @@ export function ProjectSettingsModal({ project, currentUserId, onClose, onUpdate
   const [title, setTitle] = useState(project.title);
   const [description, setDescription] = useState(project.description || '');
   const [wordCountTarget, setWordCountTarget] = useState(project.wordCountTarget);
+  const [collaborators, setCollaborators] = useState(project.collaborators);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<'editor' | 'viewer'>('editor');
   const [inviteError, setInviteError] = useState('');
@@ -34,7 +35,7 @@ export function ProjectSettingsModal({ project, currentUserId, onClose, onUpdate
 
   const showNotif = (msg: string) => {
     setNotification(msg);
-    setTimeout(() => setNotification(''), 3000);
+    setTimeout(() => setNotification(''), 3500);
   };
 
   const handleSave = async () => {
@@ -67,19 +68,31 @@ export function ProjectSettingsModal({ project, currentUserId, onClose, onUpdate
     } else {
       setInviteEmail('');
       showNotif(`Invitation sent to ${inviteEmail}.`);
+      refreshData(project._id);
     }
     setInviting(false);
   };
 
   const handleRemove = async (userId: string) => {
-    const res = await fetch(`/api/projects/${project._id}/invite`, {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId }),
-    });
-    if (res.ok) {
-      showNotif('Collaborator removed.');
-      refreshData(project._id);
+    // Optimistically update local UI immediately
+    setCollaborators(prev => prev.filter(c => c.userId !== userId));
+    showNotif('Collaborator removed successfully.');
+
+    try {
+      const res = await fetch(`/api/projects/${project._id}/invite`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId }),
+      });
+      if (res.ok) {
+        refreshData(project._id);
+      } else {
+        // Revert on error
+        setCollaborators(project.collaborators);
+        setInviteError('Failed to remove collaborator.');
+      }
+    } catch {
+      setCollaborators(project.collaborators);
     }
   };
 
@@ -171,7 +184,7 @@ export function ProjectSettingsModal({ project, currentUserId, onClose, onUpdate
             </span>
           </div>
 
-          {project.collaborators.map(c => (
+          {collaborators.map(c => (
             <div key={c.userId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: 'var(--bg-primary)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
               <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{c.email || c.userId}</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

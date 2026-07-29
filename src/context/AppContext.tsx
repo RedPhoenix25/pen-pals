@@ -103,6 +103,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         fetch(`/api/projects/${projectId}`)
       ]);
 
+      if (projRes.status === 403) {
+        // User has been removed from project access!
+        window.location.assign('/dashboard?removed=true');
+        return;
+      }
+
       if (chapsRes.ok) {
         const chaps = await chapsRes.json();
         setChapters(chaps);

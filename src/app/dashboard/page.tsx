@@ -7,6 +7,8 @@ import Link from 'next/link';
 import { Plus, LogOut, BookOpen, Users, Clock, Target, Trash2, X } from 'lucide-react';
 import { NotificationBell } from '../../components/NotificationBell';
 
+import { useSearchParams } from 'next/navigation';
+
 interface Project {
   _id: string;
   title: string;
@@ -26,6 +28,8 @@ const COVER_COLORS = [
 export default function DashboardPage() {
   const { data: session } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const [removedAlert, setRemovedAlert] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [showNewModal, setShowNewModal] = useState(false);
@@ -35,6 +39,12 @@ export default function DashboardPage() {
   const [creating, setCreating] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
   const [deleting, setDeleting] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get('removed') === 'true') {
+      setRemovedAlert(true);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -89,6 +99,12 @@ export default function DashboardPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', display: 'flex', flexDirection: 'column' }}>
+      {removedAlert && (
+        <div style={{ padding: '12px 24px', background: 'rgba(239, 68, 68, 0.15)', borderBottom: '1px solid rgba(239, 68, 68, 0.3)', color: '#f87171', fontSize: '13px', textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px' }}>
+          <span>You have been removed from that project by the owner.</span>
+          <button onClick={() => setRemovedAlert(false)} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}><X size={14} /></button>
+        </div>
+      )}
 
       {/* Top Nav */}
       <nav style={{

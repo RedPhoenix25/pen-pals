@@ -76,7 +76,12 @@ export default function EditorPage() {
   const activeChapter = chapters.find(c => c._id === activeChapterId);
 
   useEffect(() => {
-    if (projectId) refreshData(projectId);
+    if (!projectId) return;
+    refreshData(projectId);
+    const interval = setInterval(() => {
+      refreshData(projectId);
+    }, 4000);
+    return () => clearInterval(interval);
   }, [projectId, refreshData]);
   return (
     <TutorialProvider>
