@@ -1,9 +1,10 @@
 "use client";
 
-import { BookOpen, Users, LayoutTemplate, Plus, Edit2, Trash2 } from 'lucide-react';
+import { BookOpen, Users, LayoutTemplate, Plus, Edit2, Trash2, PlayCircle } from 'lucide-react';
 import { useState } from 'react';
 import { useAppContext, Character } from '@/context/AppContext';
 import { CharacterProfileModal } from './CharacterProfileModal';
+import { useTutorial } from './tutorial/TutorialContext';
 
 export function Sidebar({ isOpen, projectId }: { isOpen: boolean; projectId: string }) {
   const { 
@@ -12,6 +13,8 @@ export function Sidebar({ isOpen, projectId }: { isOpen: boolean; projectId: str
     characters, setCharacters,
     activeTab, setActiveTab
   } = useAppContext();
+
+  const { startTour } = useTutorial();
 
   // Temporary local state for adding new items (we'll connect to DB later)
   const [isAddingChapter, setIsAddingChapter] = useState(false);
@@ -131,7 +134,7 @@ export function Sidebar({ isOpen, projectId }: { isOpen: boolean; projectId: str
 
       <div style={{ flex: 1, padding: '24px', overflowY: 'auto' }}>
         {activeTab === 'drafts' && (
-          <div>
+          <div data-tutorial="sidebar-chapters">
             <h3 style={{ fontSize: '14px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '16px' }}>Chapters</h3>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {chapters.map(chap => (
@@ -255,6 +258,17 @@ export function Sidebar({ isOpen, projectId }: { isOpen: boolean; projectId: str
             )}
           </div>
         )}
+      </div>
+
+      <div style={{ padding: '16px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'center' }}>
+        <button 
+          onClick={startTour}
+          style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', opacity: 0.7, transition: 'opacity 0.2s' }}
+          onMouseOver={(e) => e.currentTarget.style.opacity = '1'}
+          onMouseOut={(e) => e.currentTarget.style.opacity = '0.7'}
+        >
+          <PlayCircle size={14} /> Replay Tour
+        </button>
       </div>
 
       {/* Themed Confirmation Modal */}

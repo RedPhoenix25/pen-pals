@@ -248,7 +248,7 @@ function TiptapEditor({ doc, provider, userName, userColor, projectId }: { doc: 
       
       {/* Active Users Badge */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px', gap: '8px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--bg-secondary)', padding: '4px 12px', borderRadius: '20px', border: '1px solid var(--border-color)' }}>
+        <div data-tutorial="editor-collaborators" style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--bg-secondary)', padding: '4px 12px', borderRadius: '20px', border: '1px solid var(--border-color)' }}>
           <Users size={14} color="var(--text-secondary)" />
           <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
             {others.length === 0 ? 'Only you editing' : `${others.length} other${others.length > 1 ? 's' : ''} editing`}
@@ -520,7 +520,9 @@ function TiptapEditor({ doc, provider, userName, userColor, projectId }: { doc: 
         </div>
       )}
 
-      <EditorContent editor={editor} />
+      <div data-tutorial="editor-content">
+        <EditorContent editor={editor} />
+      </div>
       
       {/* Footer Status */}
       <div style={{ 

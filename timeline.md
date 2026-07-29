@@ -42,6 +42,7 @@ This document tracks every step of the development process for the Pen Pals writ
 - **Auto-Capitalisation**: Implemented smart capitalisation in the TipTap editor — the first letter of a new paragraph (on Enter) and the first letter after a full stop are automatically uppercased, reducing the need to press Caps Lock while typing.
 - **Author Presence Tags**: Fixed collaborative cursor author tags so they only display on the tab where the OTHER author is writing — not on both tabs simultaneously.
 - **Storyboard Horizontal Scroll (Mobile/Tablet)**: Fixed a persistent bug preventing horizontal scrolling on the Storyboard page on smaller screens. Root cause was `overflow: hidden` on `html, body` in `globals.css` which suppressed all child overflow scrolling on mobile browsers. Fixed by splitting to `overflow-x: hidden` + `overflow-y: hidden`, adding a dedicated `.kanban-scroll` CSS class using `overflow-x: scroll` and `-webkit-overflow-scrolling: touch`, and correcting the flex height chain (`flex: 1` + `minHeight: 0`) throughout the layout.
+- **Onboarding Tour**: Built an interactive onboarding tour with sharp cutouts and frosted glassmorphism dialogs to guide new users through the editor's features.
 
 ## 2026-07-24 - Phase 5: Auth, Multi-Project Architecture, and Social
 - **Authentication**: Implemented NextAuth v5 (Beta) supporting both Google OAuth and Email/Password credentials. Configured secure JWT sessions, `User` model, and middleware protection that redirects unauthenticated users to a custom dark-themed `/login` page.
