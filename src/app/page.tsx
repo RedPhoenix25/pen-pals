@@ -385,7 +385,7 @@ export default function LandingPage() {
         <span className="landing-footer-copy">© {new Date().getFullYear()} Pen Pals. All rights reserved.</span>
         <nav className="landing-footer-links" aria-label="Footer links">
           <a href="/dashboard">App</a>
-          <a href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <a href="https://github.com/RedPhoenix25/pen-pals" target="_blank" rel="noopener noreferrer">GitHub</a>
         </nav>
       </footer>
 
