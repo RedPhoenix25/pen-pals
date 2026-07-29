@@ -351,13 +351,22 @@ export default function LandingPage() {
           See coloured cursors dance across the page as your writing partner types
           alongside you — even from across the world.
         </p>
-        <div className="landing-collab-lines" aria-hidden="true">
-          <div className="landing-collab-line" />
-          <div className="landing-collab-line" />
-          <div className="landing-collab-line" />
+        <div className="landing-collab-graphic" aria-hidden="true">
+          <div className="landing-cursor-1">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z" fill="rgba(167, 139, 250, 0.2)" />
+            </svg>
+            <span className="landing-cursor-name" style={{ background: '#a78bfa', color: '#171513' }}>Alex</span>
+          </div>
+          <div className="landing-cursor-2">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z" fill="rgba(52, 211, 153, 0.2)" />
+            </svg>
+            <span className="landing-cursor-name" style={{ background: '#34d399', color: '#171513' }}>Sam</span>
+          </div>
         </div>
-        <p style={{ fontSize: 12, color: 'var(--text-secondary)', opacity: 0.5, marginTop: 24, letterSpacing: '0.04em' }}>
-          Each colour represents a different author
+        <p style={{ fontSize: 13, color: 'var(--text-secondary)', opacity: 0.6, marginTop: 40, letterSpacing: '0.04em' }}>
+          Instantly syncs across devices
         </p>
       </section>
 

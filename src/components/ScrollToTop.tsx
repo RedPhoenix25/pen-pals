@@ -37,7 +37,7 @@ export function ScrollToTop() {
       aria-label="Scroll to top"
       style={{
         position: 'fixed',
-        bottom: '32px',
+        bottom: '80px',
         right: '32px',
         background: isHovered ? 'var(--text-primary)' : 'var(--bg-secondary)',
         border: '1px solid var(--border-color)',

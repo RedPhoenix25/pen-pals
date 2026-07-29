@@ -230,6 +230,7 @@
   inset: -40px;
   background: radial-gradient(ellipse at center, rgba(168,162,158,0.08) 0%, transparent 70%);
   pointer-events: none;
+  z-index: -1;
 }
 
 .landing-screenshot {
@@ -420,62 +421,59 @@
   pointer-events: none;
 }
 
-.landing-collab-lines {
-  max-width: 700px;
-  margin: 60px auto 0;
+.landing-collab-graphic {
   position: relative;
-  padding: 32px 0;
+  width: 100%;
+  max-width: 600px;
+  height: 200px;
+  margin: 40px auto 0;
+  pointer-events: none;
 }
 
-.landing-collab-line {
-  height: 2px;
-  background: var(--border-color);
-  border-radius: 2px;
-  margin: 20px 0;
-  position: relative;
-  overflow: hidden;
-}
-
-.landing-collab-line::after {
-  content: '';
+.landing-cursor-1, .landing-cursor-2 {
   position: absolute;
-  top: -4px;
-  height: 10px;
-  width: 48px;
-  border-radius: 3px;
-  opacity: 0.85;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
 }
 
-.landing-collab-line:nth-child(1)::after {
-  background: #a78bfa;
-  animation: cursorSlide1 4s ease-in-out infinite;
+.landing-cursor-1 svg, .landing-cursor-2 svg {
+  width: 28px;
+  height: 28px;
 }
 
-.landing-collab-line:nth-child(2)::after {
-  background: #34d399;
-  animation: cursorSlide2 5s 1.2s ease-in-out infinite;
-  width: 36px;
+.landing-cursor-name {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: -2px;
+  margin-left: 14px;
 }
 
-.landing-collab-line:nth-child(3)::after {
-  background: #fb923c;
-  animation: cursorSlide3 4.5s 0.6s ease-in-out infinite;
-  width: 56px;
+.landing-cursor-1 {
+  top: 40px;
+  left: 20%;
+  animation: floatCursor1 6s ease-in-out infinite alternate;
 }
 
-@keyframes cursorSlide1 {
-  0%   { left: -60px; }
-  100% { left: calc(100% + 60px); }
+.landing-cursor-2 {
+  bottom: 20px;
+  right: 20%;
+  animation: floatCursor2 7s ease-in-out infinite alternate;
 }
 
-@keyframes cursorSlide2 {
-  0%   { left: -50px; }
-  100% { left: calc(100% + 50px); }
+@keyframes floatCursor1 {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(120px, -20px) scale(1.05); }
+  100% { transform: translate(240px, 30px) scale(1); }
 }
 
-@keyframes cursorSlide3 {
-  0%   { left: -70px; }
-  100% { left: calc(100% + 70px); }
+@keyframes floatCursor2 {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-150px, 40px) scale(1.05); }
+  100% { transform: translate(-280px, -10px) scale(1); }
 }
 
 /* ── CTA Banner ── */
