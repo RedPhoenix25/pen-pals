@@ -41,7 +41,7 @@ export interface ProjectSettings {
   title: string;
   description: string;
   ownerId: string;
-  collaborators: { userId: string; role: string }[];
+  collaborators: { userId: string; role: string; email?: string }[];
   wordCountTarget: number;
   acts: string[];
   coverColor: string;

@@ -18,7 +18,17 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
     project.collaborators.some((c: { userId: string }) => c.userId === userId);
   if (!hasAccess) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
-  return NextResponse.json(project);
+  // Fetch emails for the collaborators so the frontend can display them nicely
+  const collaboratorUserIds = project.collaborators.map((c: any) => c.userId);
+  const users = await UserModel.find({ _id: { $in: collaboratorUserIds } }, 'email');
+  
+  const enrichedProject = project.toObject();
+  enrichedProject.collaborators = enrichedProject.collaborators.map((c: any) => {
+    const user = users.find(u => u._id.toString() === c.userId);
+    return { ...c, email: user ? user.email : c.userId };
+  });
+
+  return NextResponse.json(enrichedProject);
 }
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {

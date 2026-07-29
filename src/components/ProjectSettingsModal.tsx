@@ -173,7 +173,7 @@ export function ProjectSettingsModal({ project, currentUserId, onClose, onUpdate
 
           {project.collaborators.map(c => (
             <div key={c.userId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: 'var(--bg-primary)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-              <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{c.userId}</span>
+              <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{c.email || c.userId}</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{ROLE_LABELS[c.role] || c.role}</span>
                 {isOwner && (
