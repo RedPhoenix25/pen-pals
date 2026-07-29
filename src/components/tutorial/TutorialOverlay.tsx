@@ -1,91 +1,148 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useTutorial } from "./TutorialContext";
 import { X } from "lucide-react";
 
+const TOOLTIP_WIDTH = 300;
+const TOOLTIP_HEIGHT = 150; // approximate
+const PADDING = 10; // cutout padding around element
+
 export function TutorialOverlay() {
   const { isActive, currentStepIndex, currentStep, nextStep, skipTour } = useTutorial();
-  const [targetRect, setTargetRect] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
+  const [rect, setRect] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
+  const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+  const animFrameRef = useRef<number | null>(null);
+  const highlightRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (!isActive || !currentStep) return;
+    if (!isActive || !currentStep) {
+      setRect(null);
+      return;
+    }
 
-    const updatePosition = () => {
+    const measure = () => {
       const element = document.querySelector(`[data-tutorial="${currentStep.id}"]`);
+
       if (element) {
-        const rect = element.getBoundingClientRect();
-        // Add a little padding around the cutout
-        setTargetRect({
-          x: rect.left - 8,
-          y: rect.top - 8,
-          w: rect.width + 16,
-          h: rect.height + 16,
-        });
-        
-        // Ensure element is in view
-        element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+        const r = element.getBoundingClientRect();
+
+        // Only treat as valid if it's actually on screen
+        if (r.width === 0 && r.height === 0) {
+          setRect(null);
+          computeFallbackTooltip();
+          return;
+        }
+
+        const cutout = {
+          x: r.left - PADDING,
+          y: r.top - PADDING,
+          w: r.width + PADDING * 2,
+          h: r.height + PADDING * 2,
+        };
+        setRect(cutout);
+        computeTooltipPos(cutout);
+
+        // Apply highlight ring directly to the element
+        const el = element as HTMLElement;
+        el.style.outline = "2px solid rgba(214, 158, 46, 0.8)";
+        el.style.outlineOffset = "4px";
+        el.style.borderRadius = "6px";
+        el.style.transition = "outline 0.3s ease";
+        highlightRef.current = el as HTMLDivElement;
       } else {
-        // If element is completely missing from DOM (maybe on wrong route), skip or fallback
-        setTargetRect(null);
+        setRect(null);
+        computeFallbackTooltip();
       }
     };
 
-    // Delay slightly to allow DOM transitions/renders
-    const timeoutId = setTimeout(updatePosition, 50);
-    window.addEventListener("resize", updatePosition);
+    const computeTooltipPos = (cutout: { x: number; y: number; w: number; h: number }) => {
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const pos = currentStep.position || "bottom";
+
+      let top = 0;
+      let left = 0;
+
+      if (pos === "bottom") {
+        top = cutout.y + cutout.h + 16;
+        left = cutout.x + cutout.w / 2 - TOOLTIP_WIDTH / 2;
+      } else if (pos === "top") {
+        top = cutout.y - TOOLTIP_HEIGHT - 16;
+        left = cutout.x + cutout.w / 2 - TOOLTIP_WIDTH / 2;
+      } else if (pos === "right") {
+        top = cutout.y + cutout.h / 2 - TOOLTIP_HEIGHT / 2;
+        left = cutout.x + cutout.w + 16;
+      } else if (pos === "left") {
+        top = cutout.y + cutout.h / 2 - TOOLTIP_HEIGHT / 2;
+        left = cutout.x - TOOLTIP_WIDTH - 16;
+      }
+
+      // Clamp to viewport
+      if (left + TOOLTIP_WIDTH > vw - 16) left = vw - TOOLTIP_WIDTH - 16;
+      if (left < 16) left = 16;
+      if (top + TOOLTIP_HEIGHT > vh - 16) top = vh - TOOLTIP_HEIGHT - 16;
+      if (top < 16) top = 16;
+
+      setTooltipPos({ top, left });
+    };
+
+    const computeFallbackTooltip = () => {
+      setTooltipPos({
+        top: window.innerHeight / 2 - TOOLTIP_HEIGHT / 2,
+        left: window.innerWidth / 2 - TOOLTIP_WIDTH / 2,
+      });
+    };
+
+    // Slight delay for DOM to settle, then measure
+    const timeout = setTimeout(() => {
+      measure();
+    }, 80);
+
+    const onResize = () => measure();
+    window.addEventListener("resize", onResize);
 
     return () => {
-      clearTimeout(timeoutId);
-      window.removeEventListener("resize", updatePosition);
+      clearTimeout(timeout);
+      window.removeEventListener("resize", onResize);
+      // Remove outline from previous element
+      if (highlightRef.current) {
+        highlightRef.current.style.outline = "";
+        highlightRef.current.style.outlineOffset = "";
+        highlightRef.current.style.borderRadius = "";
+        highlightRef.current = null;
+      }
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };
   }, [isActive, currentStep]);
 
+  // Clean up highlight on tour end
+  useEffect(() => {
+    if (!isActive && highlightRef.current) {
+      highlightRef.current.style.outline = "";
+      highlightRef.current.style.outlineOffset = "";
+      highlightRef.current = null;
+    }
+  }, [isActive]);
+
   if (!isActive || !currentStep) return null;
 
-  // Calculate tooltip position based on target rect
-  const tooltipStyle: React.CSSProperties = {
-    position: "absolute",
-    zIndex: 10000,
-    width: "300px",
-    background: "rgba(30, 27, 25, 0.65)", // Warm black glass
-    backdropFilter: "blur(16px)",
-    WebkitBackdropFilter: "blur(16px)",
-    border: "1px solid rgba(255, 255, 255, 0.08)",
-    borderRadius: "12px",
-    padding: "20px",
-    boxShadow: "0 24px 48px rgba(0,0,0,0.4)",
-    transition: "all 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
-    opacity: targetRect ? 1 : 0,
-    pointerEvents: "auto",
+  const vw = typeof window !== "undefined" ? window.innerWidth : 1200;
+  const vh = typeof window !== "undefined" ? window.innerHeight : 800;
+
+  // Build the SVG path for the overlay with rectangular cutout
+  // We draw the full viewport rect and subtract the cutout using clipPath evenodd
+  const buildClipPath = () => {
+    if (!rect) {
+      // No cutout — just a centered semi-transparent box with no hole
+      return null;
+    }
+    const { x, y, w, h } = rect;
+    // Outer rect (full screen) then inner rect (hole) — evenodd fill rule creates the cutout
+    return `M0 0 L${vw} 0 L${vw} ${vh} L0 ${vh} Z M${x} ${y} L${x + w} ${y} L${x + w} ${y + h} L${x} ${y + h} Z`;
   };
 
-  if (targetRect) {
-    const { x, y, w, h } = targetRect;
-    // Default position is bottom
-    let top = y + h + 16;
-    let left = x;
-
-    if (currentStep.position === "right") {
-      top = y;
-      left = x + w + 16;
-    } else if (currentStep.position === "left") {
-      top = y;
-      left = x - 300 - 16;
-    } else if (currentStep.position === "top") {
-      top = y - 150 - 16; // approx height of tooltip
-      left = x;
-    }
-
-    // Boundary checks to keep tooltip on screen
-    if (left + 300 > window.innerWidth) left = window.innerWidth - 320;
-    if (left < 20) left = 20;
-    if (top + 150 > window.innerHeight) top = y - 160;
-    if (top < 20) top = 20;
-
-    tooltipStyle.top = `${top}px`;
-    tooltipStyle.left = `${left}px`;
-  }
+  const clipPath = buildClipPath();
 
   return (
     <div
@@ -93,76 +150,122 @@ export function TutorialOverlay() {
         position: "fixed",
         inset: 0,
         zIndex: 9998,
-        pointerEvents: "auto", // blocks clicks on elements underneath
+        pointerEvents: "none", // Default: let clicks through
       }}
     >
-      {/* SVG Mask for the sharp cutout spotlight */}
-      <svg width="100%" height="100%">
-        <defs>
-          <mask id="spotlight-mask">
-            <rect width="100%" height="100%" fill="white" />
-            {targetRect && (
-              <rect
-                x={targetRect.x}
-                y={targetRect.y}
-                width={targetRect.w}
-                height={targetRect.h}
-                fill="black"
-                rx="6" // slightly rounded sharp corners
-                ry="6"
-                style={{ transition: "all 0.4s cubic-bezier(0.16, 1, 0.3, 1)" }}
-              />
-            )}
-          </mask>
-        </defs>
-        <rect
-          width="100%"
-          height="100%"
-          fill="rgba(12, 10, 9, 0.85)" // Warm ultra dark background
-          mask="url(#spotlight-mask)"
-        />
+      {/* SVG overlay with cutout hole */}
+      <svg
+        width={vw}
+        height={vh}
+        style={{ position: "absolute", inset: 0, pointerEvents: "none" }}
+      >
+        {clipPath ? (
+          <path
+            d={clipPath}
+            fill="rgba(12, 10, 9, 0.82)"
+            fillRule="evenodd"
+            style={{ transition: "d 0.4s cubic-bezier(0.16, 1, 0.3, 1)" }}
+          />
+        ) : (
+          // No target found — just a soft vignette, no hard block
+          <rect
+            width={vw}
+            height={vh}
+            fill="rgba(12, 10, 9, 0.82)"
+          />
+        )}
       </svg>
 
-      {/* Tooltip Dialog */}
-      <div style={tooltipStyle}>
+      {/* Tooltip — always visible, always clickable */}
+      <div
+        style={{
+          position: "fixed",
+          top: tooltipPos.top,
+          left: tooltipPos.left,
+          width: TOOLTIP_WIDTH,
+          zIndex: 10000,
+          background: "rgba(28, 24, 22, 0.72)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          border: "1px solid rgba(214, 158, 46, 0.25)",
+          borderRadius: "12px",
+          padding: "20px",
+          boxShadow: "0 24px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04)",
+          pointerEvents: "auto",
+          transition: "top 0.4s cubic-bezier(0.16, 1, 0.3, 1), left 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+        }}
+      >
+        {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
-          <h3 style={{ margin: 0, fontSize: "16px", fontWeight: 600, color: "var(--text-primary)" }}>
+          <h3 style={{ margin: 0, fontSize: "15px", fontWeight: 600, color: "var(--text-primary)", letterSpacing: "-0.01em" }}>
             {currentStep.title}
           </h3>
           <button
             onClick={skipTour}
-            style={{ background: "transparent", border: "none", color: "var(--text-secondary)", cursor: "pointer", padding: 0 }}
+            style={{ background: "transparent", border: "none", color: "var(--text-secondary)", cursor: "pointer", padding: 0, lineHeight: 1, flexShrink: 0, marginLeft: 8 }}
             aria-label="Close tour"
           >
-            <X size={16} />
+            <X size={15} />
           </button>
         </div>
-        <p style={{ margin: "0 0 20px", fontSize: "14px", color: "var(--text-secondary)", lineHeight: 1.5 }}>
+
+        {/* Description */}
+        <p style={{ margin: "0 0 20px", fontSize: "13.5px", color: "var(--text-secondary)", lineHeight: 1.6 }}>
           {currentStep.description}
         </p>
-        
+
+        {/* Footer */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ fontSize: "12px", color: "var(--text-secondary)", opacity: 0.6 }}>
-            Step {currentStepIndex + 1} of 5
-          </span>
-          <button
-            onClick={nextStep}
-            style={{
-              background: "var(--text-primary)",
-              color: "var(--bg-primary)",
-              border: "none",
-              borderRadius: "6px",
-              padding: "6px 16px",
-              fontSize: "13px",
-              fontWeight: 500,
-              cursor: "pointer",
-              transition: "opacity 0.2s",
-            }}
-            onMouseOver={(e) => (e.currentTarget.style.opacity = "0.9")}
-            onMouseOut={(e) => (e.currentTarget.style.opacity = "1")}
-          >
-            {currentStepIndex === 4 ? "Finish" : "Next"}
-          </button>
+          {/* Step dots */}
+          <div style={{ display: "flex", gap: "5px", alignItems: "center" }}>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div
+                key={i}
+                style={{
+                  width: i === currentStepIndex ? "16px" : "6px",
+                  height: "6px",
+                  borderRadius: "4px",
+                  background: i === currentStepIndex ? "rgba(214, 158, 46, 0.9)" : "rgba(255,255,255,0.2)",
+                  transition: "all 0.3s ease",
+                }}
+              />
+            ))}
+          </div>
+
+          <div style={{ display: "flex", gap: "8px" }}>
+            <button
+              onClick={skipTour}
+              style={{
+                background: "transparent",
+                color: "var(--text-secondary)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                borderRadius: "6px",
+                padding: "6px 14px",
+                fontSize: "12px",
+                cursor: "pointer",
+              }}
+            >
+              Skip
+            </button>
+            <button
+              onClick={nextStep}
+              style={{
+                background: "rgba(214, 158, 46, 0.9)",
+                color: "#1a1612",
+                border: "none",
+                borderRadius: "6px",
+                padding: "6px 16px",
+                fontSize: "13px",
+                fontWeight: 600,
+                cursor: "pointer",
+                transition: "background 0.2s",
+              }}
+              onMouseOver={(e) => (e.currentTarget.style.background = "rgba(214, 158, 46, 1)")}
+              onMouseOut={(e) => (e.currentTarget.style.background = "rgba(214, 158, 46, 0.9)")}
+            >
+              {currentStepIndex === 4 ? "Finish" : "Next →"}
+            </button>
+          </div>
         </div>
       </div>
     </div>

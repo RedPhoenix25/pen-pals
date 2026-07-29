@@ -11,33 +11,33 @@ export type TutorialStep = {
 
 const TOUR_STEPS: TutorialStep[] = [
   {
-    id: "sidebar-chapters",
-    title: "Chapters & Structure",
-    description: "Organize your novel. Add, rename, or delete chapters here to build your plot.",
-    position: "right",
-  },
-  {
-    id: "editor-content",
-    title: "The Writing Canvas",
-    description: "Your minimalist workspace. The editor gets out of your way so you can focus on the story.",
-    position: "bottom",
-  },
-  {
     id: "editor-collaborators",
     title: "Live Co-Authors",
-    description: "See exactly who is online and writing with you in real-time.",
-    position: "left",
+    description: "See exactly who is online and writing alongside you in real-time.",
+    position: "bottom",
   },
   {
     id: "sidebar-settings",
     title: "Invite Collaborators",
-    description: "Click here to manage your project and invite new co-authors via email.",
-    position: "right",
+    description: "Click the gear icon to manage your project settings and invite new co-authors via email.",
+    position: "bottom",
   },
   {
     id: "sidebar-notifications",
     title: "Stay Updated",
-    description: "Accept invites to join other projects or see when a co-author mentions you.",
+    description: "Accept invites to join other projects or see when a co-author mentions you here.",
+    position: "bottom",
+  },
+  {
+    id: "editor-content",
+    title: "The Writing Canvas",
+    description: "Your minimalist workspace. The editor gets out of your way so you can focus purely on the story.",
+    position: "bottom",
+  },
+  {
+    id: "sidebar-chapters",
+    title: "Chapters & Structure",
+    description: "Open the panel on the left to manage chapters, characters, and your storyboard. Use the icon in the top-left to open it.",
     position: "right",
   },
 ];
