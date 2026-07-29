@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import dbConnect from '@/lib/mongodb';
 import ProjectModel from '@/lib/models/Project';
+import UserModel from '@/lib/models/User';
 
 export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
