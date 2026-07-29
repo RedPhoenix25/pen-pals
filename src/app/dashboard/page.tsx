@@ -7,11 +7,6 @@ import Link from 'next/link';
 import { Plus, LogOut, BookOpen, Users, Clock, Target, Trash2, X } from 'lucide-react';
 import { NotificationBell } from '../../components/NotificationBell';
 
-import { useSearchParams } from 'next/navigation';
-import { Suspense } from 'react';
-
-export const dynamic = 'force-dynamic';
-
 interface Project {
   _id: string;
   title: string;
@@ -27,26 +22,6 @@ const COVER_COLORS = [
   '#44403c', '#1e3a5f', '#2d4a3e', '#4a2d3e',
   '#3e3a1e', '#2d1e4a', '#4a3a1e', '#1e4a3a',
 ];
-
-function RemovedAlertBanner() {
-  const searchParams = useSearchParams();
-  const [removedAlert, setRemovedAlert] = useState(false);
-
-  useEffect(() => {
-    if (searchParams.get('removed') === 'true') {
-      setRemovedAlert(true);
-    }
-  }, [searchParams]);
-
-  if (!removedAlert) return null;
-
-  return (
-    <div style={{ padding: '12px 24px', background: 'rgba(239, 68, 68, 0.15)', borderBottom: '1px solid rgba(239, 68, 68, 0.3)', color: '#f87171', fontSize: '13px', textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px' }}>
-      <span>You have been removed from that project by the owner.</span>
-      <button onClick={() => setRemovedAlert(false)} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}><X size={14} /></button>
-    </div>
-  );
-}
 
 export default function DashboardPage() {
   const { data: session } = useSession();
@@ -114,9 +89,6 @@ export default function DashboardPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', display: 'flex', flexDirection: 'column' }}>
-      <Suspense fallback={null}>
-        <RemovedAlertBanner />
-      </Suspense>
 
       {/* Top Nav */}
       <nav style={{

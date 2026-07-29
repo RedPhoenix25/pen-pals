@@ -105,7 +105,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
       if (projRes.status === 403) {
         // User has been removed from project access!
-        window.location.assign('/dashboard?removed=true');
+        window.location.assign('/dashboard');
         return;
       }
 
