@@ -12,8 +12,56 @@ import { useAppContext } from '@/context/AppContext';
 import { useSession } from 'next-auth/react';
 import { ProjectSettingsModal } from '../../../components/ProjectSettingsModal';
 import { NotificationBell } from '../../../components/NotificationBell';
-import { TutorialProvider } from '../../../components/tutorial/TutorialContext';
+import { TutorialProvider, useTutorial } from '../../../components/tutorial/TutorialContext';
 import { TutorialOverlay } from '../../../components/tutorial/TutorialOverlay';
+import { GraduationCap } from 'lucide-react';
+
+// Floating replay button — always visible in the editor
+function TourReplayButton() {
+  const { isActive, startTour } = useTutorial();
+  if (isActive) return null;
+  return (
+    <button
+      onClick={startTour}
+      title="Replay Tour"
+      style={{
+        position: 'fixed',
+        bottom: '24px',
+        left: '24px',
+        zIndex: 50,
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px',
+        background: 'rgba(28, 24, 22, 0.85)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        border: '1px solid rgba(214, 158, 46, 0.3)',
+        borderRadius: '20px',
+        color: 'rgba(214, 158, 46, 0.85)',
+        padding: '7px 14px 7px 10px',
+        fontSize: '12px',
+        fontWeight: 500,
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+        boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+        letterSpacing: '0.01em',
+      }}
+      onMouseOver={(e) => {
+        e.currentTarget.style.borderColor = 'rgba(214, 158, 46, 0.7)';
+        e.currentTarget.style.color = 'rgba(214, 158, 46, 1)';
+        e.currentTarget.style.background = 'rgba(40, 33, 22, 0.95)';
+      }}
+      onMouseOut={(e) => {
+        e.currentTarget.style.borderColor = 'rgba(214, 158, 46, 0.3)';
+        e.currentTarget.style.color = 'rgba(214, 158, 46, 0.85)';
+        e.currentTarget.style.background = 'rgba(28, 24, 22, 0.85)';
+      }}
+    >
+      <GraduationCap size={14} />
+      Tour
+    </button>
+  );
+}
 
 export default function EditorPage() {
   const params = useParams();
@@ -34,6 +82,7 @@ export default function EditorPage() {
     <TutorialProvider>
       <main style={{ display: 'flex', height: '100vh', width: '100vw' }}>
         <TutorialOverlay />
+        <TourReplayButton />
 
         {/* Sidebar Area */}
         <Sidebar isOpen={isSidebarOpen} projectId={projectId} />
