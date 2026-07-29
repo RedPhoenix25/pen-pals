@@ -327,9 +327,7 @@
 }
 
 .landing-feature-card:hover {
-  background: rgba(41, 37, 36, 0.6);
-  transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+  background: rgba(41, 37, 36, 0.8);
 }
 
 .landing-feature-icon {
