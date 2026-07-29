@@ -54,7 +54,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   if (project.ownerId !== session.user.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
   project.collaborators = project.collaborators.filter(
-    (c: { userId: string }) => c.userId !== userId
+    (c: { userId: any }) => c.userId.toString() !== userId
   );
   await project.save();
 
