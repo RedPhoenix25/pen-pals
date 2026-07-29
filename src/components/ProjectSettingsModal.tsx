@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { X, UserPlus, Trash2, Crown } from 'lucide-react';
-import { ProjectSettings } from '@/context/AppContext';
+import { ProjectSettings, useAppContext } from '@/context/AppContext';
 import { CustomSelect } from './CustomSelect';
 
 interface Props {
@@ -19,6 +19,7 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 export function ProjectSettingsModal({ project, currentUserId, onClose, onUpdate }: Props) {
+  const { refreshData } = useAppContext();
   const [title, setTitle] = useState(project.title);
   const [description, setDescription] = useState(project.description || '');
   const [wordCountTarget, setWordCountTarget] = useState(project.wordCountTarget);
@@ -76,7 +77,10 @@ export function ProjectSettingsModal({ project, currentUserId, onClose, onUpdate
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId }),
     });
-    if (res.ok) showNotif('Collaborator removed.');
+    if (res.ok) {
+      showNotif('Collaborator removed.');
+      refreshData(project._id);
+    }
   };
 
   return (

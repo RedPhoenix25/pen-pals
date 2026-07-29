@@ -58,5 +58,13 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   );
   await project.save();
 
+  // Create in-app notification for the removed user
+  await NotificationModel.create({
+    userId: userId,
+    type: 'project_removed',
+    message: `${session.user.name} removed you from "${project.title}"`,
+    link: `/dashboard`,
+  });
+
   return NextResponse.json({ success: true });
 }

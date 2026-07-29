@@ -44,28 +44,86 @@ export function ExportMenu() {
     setExportError(null);
     try {
       const sorted = [...chapters].sort((a, b) => a.order - b.order);
-      
+
       const children: Paragraph[] = [];
-      sorted.forEach(chap => {
+
+      sorted.forEach((chap, idx) => {
+        // Chapter Title
         children.push(
           new Paragraph({
-            children: [new TextRun({ text: chap.title, bold: true, size: 32 })],
-            spacing: { after: 400, before: 400 }
+            children: [new TextRun({ text: chap.title, bold: true, size: 40 })],
+            spacing: { before: 800, after: 400 },
+            alignment: 'center',
+            pageBreakBefore: idx !== 0,
           })
         );
-        
-        // Split by naive paragraphs
-        const paragraphs = chap.content.split('</p>');
-        paragraphs.forEach(p => {
-          const raw = p.replace(/<[^>]+>/g, '').trim();
-          if (raw) {
+
+        // A decorative line or sub-spacing could go here, but for simplicity we'll just parse the content
+
+        // Parse HTML to get formatting
+        const div = document.createElement('div');
+        div.innerHTML = chap.content;
+
+        div.childNodes.forEach(node => {
+          const el = node as HTMLElement;
+          const tag = el.tagName?.toLowerCase();
+          const text = (el.textContent || '').trim();
+
+          if (!text && tag !== 'hr') return;
+
+          if (tag === 'hr') {
             children.push(
               new Paragraph({
-                children: [new TextRun(raw)],
-                spacing: { after: 200 }
+                text: '***',
+                alignment: 'center',
+                spacing: { before: 240, after: 240 },
               })
             );
+            return;
           }
+
+          if (tag === 'h2') {
+            children.push(
+              new Paragraph({
+                children: [new TextRun({ text, bold: true, size: 32 })],
+                spacing: { before: 400, after: 200 },
+              })
+            );
+            return;
+          }
+
+          if (tag === 'h3') {
+            children.push(
+              new Paragraph({
+                children: [new TextRun({ text, bold: true, italics: true, size: 28 })],
+                spacing: { before: 300, after: 150 },
+              })
+            );
+            return;
+          }
+
+          if (tag === 'blockquote') {
+            children.push(
+              new Paragraph({
+                children: [new TextRun({ text, italics: true, size: 24 })],
+                indent: { left: 720 }, // half an inch
+                spacing: { before: 120, after: 120 },
+              })
+            );
+            return;
+          }
+
+          // Regular paragraph (could contain inline formatting, but for docx export, we'll keep it simple for now)
+          const isBold = !!el.querySelector('strong') || tag === 'strong';
+          const isItalic = !!el.querySelector('em') || tag === 'em';
+
+          children.push(
+            new Paragraph({
+              children: [new TextRun({ text, bold: isBold, italics: isItalic, size: 24 })], // 12pt
+              spacing: { after: 240 },
+              indent: { firstLine: 360 }, // quarter inch indent for paragraphs (book style)
+            })
+          );
         });
       });
 
