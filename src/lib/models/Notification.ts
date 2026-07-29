@@ -5,7 +5,8 @@ export type NotificationType =
   | 'comment_added'
   | 'comment_resolved'
   | 'version_restored'
-  | 'project_invite';
+  | 'project_invite'
+  | 'project_removed';
 
 export interface INotification extends Document {
   userId: string;
@@ -22,7 +23,7 @@ const NotificationSchema: Schema = new Schema(
     userId: { type: String, required: true, index: true },
     type: {
       type: String,
-      enum: ['collaborator_joined', 'comment_added', 'comment_resolved', 'version_restored', 'project_invite'],
+      enum: ['collaborator_joined', 'comment_added', 'comment_resolved', 'version_restored', 'project_invite', 'project_removed'],
       required: true,
     },
     message: { type: String, required: true },

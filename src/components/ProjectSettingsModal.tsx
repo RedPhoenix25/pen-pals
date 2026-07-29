@@ -74,9 +74,9 @@ export function ProjectSettingsModal({ project, currentUserId, onClose, onUpdate
   };
 
   const handleRemove = async (userId: string) => {
+    setInviteError('');
     // Optimistically update local UI immediately
     setCollaborators(prev => prev.filter(c => c.userId !== userId));
-    showNotif('Collaborator removed successfully.');
 
     try {
       const res = await fetch(`/api/projects/${project._id}/invite`, {
@@ -85,14 +85,17 @@ export function ProjectSettingsModal({ project, currentUserId, onClose, onUpdate
         body: JSON.stringify({ userId }),
       });
       if (res.ok) {
+        showNotif('Collaborator removed successfully.');
         refreshData(project._id);
       } else {
+        const data = await res.json();
         // Revert on error
         setCollaborators(project.collaborators);
-        setInviteError('Failed to remove collaborator.');
+        setInviteError(data.error || 'Failed to remove collaborator.');
       }
     } catch {
       setCollaborators(project.collaborators);
+      setInviteError('Failed to remove collaborator.');
     }
   };
 
