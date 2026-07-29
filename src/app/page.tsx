@@ -152,8 +152,8 @@ export default function LandingPage() {
           <PenTool size={18} strokeWidth={2} style={{ color: 'var(--text-secondary)' }} />
           Pen<span>Pals</span>
         </span>
-        <Link href="/dashboard" className="landing-nav-cta" id="nav-cta">
-          Start Writing →
+        <Link href="/dashboard" className="landing-nav-login" id="nav-login">
+          Log in
         </Link>
       </nav>
 
@@ -233,12 +233,12 @@ export default function LandingPage() {
             from inline comments and block quotes to smart auto-capitalisation — wrapped
             in a warm, minimal interface. Your words always come first.
           </p>
-          <div style={{ marginTop: 28, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          <div style={{ marginTop: 32, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
             {['Auto-Capitalisation', 'Word Count Goals', 'Export PDF/DOCX', 'Bubble Menu'].map(tag => (
               <span key={tag} style={{
-                fontSize: 11, padding: '4px 10px', borderRadius: 6,
-                border: '1px solid var(--border-color)', color: 'var(--text-secondary)',
-                fontWeight: 500, letterSpacing: '0.02em',
+                fontSize: 12, padding: '6px 14px', borderRadius: 100,
+                border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-secondary)',
+                fontWeight: 500, letterSpacing: '0.02em', background: 'rgba(255,255,255,0.02)'
               }}>{tag}</span>
             ))}
           </div>
