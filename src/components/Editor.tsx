@@ -13,13 +13,12 @@ import {
   Bold, Italic, Strikethrough, Underline as UnderlineIcon, 
   Heading2, Heading3, Quote, Undo, Redo,
   AlignLeft, AlignCenter, AlignRight, AlignJustify, Minus, Users,
-  MessageSquare, History, Trash2, Clock
+  MessageSquare, History, Trash2
 } from 'lucide-react';
 import { RoomProvider, useRoom, useOthers, ClientSideSuspense } from "@liveblocks/react/suspense";
 import { LiveblocksYjsProvider } from "@liveblocks/yjs";
 import * as Y from "yjs";
 import { CommentMark } from '@/lib/CommentMark';
-import { TimestampMark } from '@/lib/TimestampMark';
 import { VersionHistoryPanel } from './VersionHistoryPanel';
 
 const COLORS = ['#ef4444', '#f97316', '#f59e0b', '#84cc16', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#d946ef', '#f43f5e'];
@@ -135,103 +134,6 @@ function TiptapEditor({ doc, provider, userName, userColor, projectId }: { doc: 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [comments, setComments] = useState<any[]>([]);
 
-function getWordAtOffset(text: string, offset: number): string {
-  if (!text || text.trim() === '') return '';
-  let start = offset;
-  while (start > 0 && /\S/.test(text[start - 1])) {
-    start--;
-  }
-  let end = offset;
-  while (end < text.length && /\S/.test(text[end])) {
-    end++;
-  }
-  return text.slice(start, end).trim();
-}
-
-  // Floating Timestamp Tooltip State
-  const [tooltipState, setTooltipState] = useState<{
-    visible: boolean;
-    x: number;
-    y: number;
-    timeText: string;
-    authorName?: string;
-  } | null>(null);
-
-  const tooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const wordTimestampMapRef = useRef<Map<string, { time: number; author: string }>>(new Map());
-
-  const handleCursorTimestampCheck = (editorInstance: any) => {
-    if (!editorInstance) return;
-    try {
-      const { state, view } = editorInstance;
-      const { selection } = state;
-      const { $from } = selection;
-
-      const parentText = $from.parent.textContent || '';
-      const offset = $from.parentOffset;
-      const word = getWordAtOffset(parentText, offset);
-
-      let timeVal: number | null = null;
-      let authorVal: string | null = null;
-
-      // 1. Check timestamp in map
-      if (word && wordTimestampMapRef.current.has(word.toLowerCase())) {
-        const entry = wordTimestampMapRef.current.get(word.toLowerCase());
-        if (entry) {
-          timeVal = entry.time;
-          authorVal = entry.author;
-        }
-      }
-
-      // 2. Check mark attributes on node
-      if (!timeVal) {
-        const marks = $from.marks();
-        const tsMark = marks.find((m: any) => m.type.name === 'timestampMark');
-        if (tsMark?.attrs?.time) {
-          timeVal = parseInt(tsMark.attrs.time, 10);
-          authorVal = tsMark.attrs.author;
-        } else if ($from.nodeBefore) {
-          const bMarks = $from.nodeBefore.marks || [];
-          const bTs = bMarks.find((m: any) => m.type.name === 'timestampMark');
-          if (bTs?.attrs?.time) {
-            timeVal = parseInt(bTs.attrs.time, 10);
-            authorVal = bTs.attrs.author;
-          }
-        }
-      }
-
-      // 3. Fallback to activeChapter.updatedAt if available, otherwise current date
-      let date: Date;
-      if (timeVal) {
-        date = new Date(timeVal);
-      } else if (activeChapter?.updatedAt) {
-        date = new Date(activeChapter.updatedAt);
-      } else {
-        date = new Date();
-      }
-
-      const timeStr = date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-      const dateStr = date.toLocaleDateString([], { month: 'short', day: 'numeric' });
-      const timeString = `${timeStr} · ${dateStr}`;
-
-      const coords = view.coordsAtPos(selection.from);
-      if (coords && coords.left > 0 && coords.top > 0) {
-        setTooltipState({
-          visible: true,
-          x: coords.left,
-          y: coords.top - 38,
-          timeText: timeString,
-          authorName: authorVal || userName,
-        });
-
-        if (tooltipTimeoutRef.current) clearTimeout(tooltipTimeoutRef.current);
-        tooltipTimeoutRef.current = setTimeout(() => {
-          setTooltipState(prev => prev ? { ...prev, visible: false } : null);
-        }, 3000);
-      }
-    } catch {}
-  };
-
   useEffect(() => {
     if (!activeChapterId) return;
     const fetchComments = async () => {
@@ -265,18 +167,11 @@ function getWordAtOffset(text: string, offset: number): string {
         user: { name: userName, color: userColor },
       }),
       CommentMark,
-      TimestampMark,
     ],
     editorProps: {
       attributes: {
         class: 'prose prose-invert max-w-none focus:outline-none',
         style: 'line-height: 1.8; font-size: 18px; color: var(--text-primary);'
-      },
-      handleClick(view) {
-        setTimeout(() => {
-          if (editor) handleCursorTimestampCheck(editor);
-        }, 50);
-        return false;
       },
       handleTextInput(view, from, to, text) {
         if (text.length !== 1) return false;
@@ -287,31 +182,19 @@ function getWordAtOffset(text: string, offset: number): string {
         if (!$from.parent.isTextblock) return false;
 
         const offset = $from.parentOffset;
-        let charToInsert = text;
+        let shouldCapitalize = false;
 
         if (offset === 0) {
-          charToInsert = text.toUpperCase();
+          shouldCapitalize = true;
         } else {
           const textBefore = $from.parent.textContent.slice(0, offset);
           if (/[.!?]['"”’)]?\s+$/.test(textBefore)) {
-            charToInsert = text.toUpperCase();
+            shouldCapitalize = true;
           }
         }
 
-        const now = Date.now().toString();
-        const markType = state.schema.marks.timestampMark;
-        const tr = state.tr;
-
-        if (markType) {
-          const mark = markType.create({ time: now, author: userName });
-          tr.insertText(charToInsert, from, to);
-          tr.addMark(from, from + charToInsert.length, mark);
-          view.dispatch(tr);
-          return true;
-        }
-
-        if (charToInsert !== text) {
-          const tr = state.tr.insertText(charToInsert, from, to);
+        if (shouldCapitalize && text >= 'a' && text <= 'z') {
+          const tr = state.tr.insertText(text.toUpperCase(), from, to);
           view.dispatch(tr);
           return true;
         }
@@ -333,21 +216,30 @@ function getWordAtOffset(text: string, offset: number): string {
     onUpdate: ({ editor }) => {
       if (!activeChapterId) return;
       
-      try {
-        const { selection } = editor.state;
-        const { $from } = selection;
-        const parentText = $from.parent.textContent || '';
-        const offset = $from.parentOffset;
-        const currentWord = getWordAtOffset(parentText, offset);
-        if (currentWord) {
-          wordTimestampMapRef.current.set(currentWord.toLowerCase(), {
-            time: Date.now(),
-            author: userName
-          });
-        }
-      } catch {}
-
       const html = editor.getHTML();
+      setSaveStatus('Saving...');
+      
+      // Update local state without triggering re-renders of the editor content itself
+      setChapters(prev => prev.map(c => c._id === activeChapterId ? { ...c, content: html } : c));
+      
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+      
+      saveTimeoutRef.current = setTimeout(async () => {
+        try {
+          await fetch(`/api/chapters/${activeChapterId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content: html })
+          });
+          setSaveStatus('Saved just now');
+        } catch {
+          setSaveStatus('Failed to save');
+        }
+      }, 1000);
+    }
+  });
       setSaveStatus('Saving...');
       
       // Update local state without triggering re-renders of the editor content itself
@@ -651,44 +543,6 @@ function getWordAtOffset(text: string, offset: number): string {
               Add Comment
             </button>
           </div>
-        </div>
-      )}
-
-      {/* Floating Cursor Timestamp Tooltip */}
-      {tooltipState && (
-        <div
-          style={{
-            position: 'fixed',
-            top: tooltipState.y,
-            left: tooltipState.x,
-            transform: 'translateX(-50%)',
-            zIndex: 100,
-            background: 'rgba(28, 24, 22, 0.94)',
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
-            border: '1px solid rgba(214, 158, 46, 0.4)',
-            borderRadius: '6px',
-            padding: '4px 10px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            fontSize: '11px',
-            color: 'var(--text-primary)',
-            boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
-            pointerEvents: 'none',
-            opacity: tooltipState.visible ? 1 : 0,
-            transition: 'opacity 0.35s ease, transform 0.35s ease',
-          }}
-        >
-          <Clock size={11} color="rgba(214, 158, 46, 0.9)" />
-          <span>
-            {tooltipState.timeText}
-            {tooltipState.authorName && (
-              <span style={{ color: 'var(--text-secondary)', marginLeft: '4px' }}>
-                by {tooltipState.authorName}
-              </span>
-            )}
-          </span>
         </div>
       )}
 
