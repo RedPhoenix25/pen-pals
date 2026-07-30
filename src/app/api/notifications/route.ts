@@ -37,3 +37,20 @@ export async function PUT(req: NextRequest) {
 
   return NextResponse.json({ success: true });
 }
+
+export async function DELETE(req: NextRequest) {
+  const session = await auth();
+  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  await dbConnect();
+  const id = req.nextUrl.searchParams.get('id');
+
+  if (id) {
+    await NotificationModel.deleteOne({ _id: id, userId: session.user.id });
+  } else {
+    // Delete all notifications for current user
+    await NotificationModel.deleteMany({ userId: session.user.id });
+  }
+
+  return NextResponse.json({ success: true });
+}

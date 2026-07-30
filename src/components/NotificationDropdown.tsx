@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
-import { Bell, Check } from 'lucide-react';
+import { Bell, Check, Trash2, X } from 'lucide-react';
 
 interface Notification {
   _id: string;
@@ -43,6 +43,19 @@ export function NotificationDropdown({ onClose, onMarkAllRead }: { onClose: () =
     if (onMarkAllRead) onMarkAllRead();
   };
 
+  const deleteNotification = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    setNotifications(prev => prev.filter(n => n._id !== id));
+    await fetch(`/api/notifications?id=${id}`, { method: 'DELETE' });
+    if (onMarkAllRead) onMarkAllRead();
+  };
+
+  const clearAllNotifications = async () => {
+    setNotifications([]);
+    await fetch('/api/notifications', { method: 'DELETE' });
+    if (onMarkAllRead) onMarkAllRead();
+  };
+
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const timeAgo = (dateStr: string) => {
@@ -57,7 +70,7 @@ export function NotificationDropdown({ onClose, onMarkAllRead }: { onClose: () =
         position: 'absolute',
         top: 'calc(100% + 8px)',
         right: 0,
-        width: '320px',
+        width: '340px',
         background: 'var(--bg-secondary)',
         border: '1px solid var(--border-color)',
         borderRadius: '12px',
@@ -76,11 +89,18 @@ export function NotificationDropdown({ onClose, onMarkAllRead }: { onClose: () =
             </span>
           )}
         </div>
-        {unreadCount > 0 && (
-          <button onClick={markAllRead} style={{ fontSize: '11px', color: 'var(--text-secondary)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <Check size={11} /> Mark all read
-          </button>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {unreadCount > 0 && (
+            <button onClick={markAllRead} style={{ fontSize: '11px', color: 'var(--text-secondary)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}>
+              <Check size={11} /> Read
+            </button>
+          )}
+          {notifications.length > 0 && (
+            <button onClick={clearAllNotifications} style={{ fontSize: '11px', color: 'var(--text-secondary)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px', opacity: 0.8 }} title="Clear all notifications">
+              <Trash2 size={11} /> Clear
+            </button>
+          )}
+        </div>
       </div>
 
       {/* List */}
@@ -96,6 +116,7 @@ export function NotificationDropdown({ onClose, onMarkAllRead }: { onClose: () =
           notifications.map(n => (
             <div
               key={n._id}
+              className="notification-item"
               style={{
                 padding: '12px 16px',
                 borderBottom: '1px solid var(--border-color)',
@@ -104,6 +125,7 @@ export function NotificationDropdown({ onClose, onMarkAllRead }: { onClose: () =
                 display: 'flex',
                 gap: '10px',
                 alignItems: 'flex-start',
+                position: 'relative',
                 transition: 'background 0.15s',
               }}
               onMouseEnter={e => { if (n.link) e.currentTarget.style.background = 'var(--bg-primary)'; }}
@@ -113,10 +135,29 @@ export function NotificationDropdown({ onClose, onMarkAllRead }: { onClose: () =
               {!n.read && (
                 <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#3b82f6', marginTop: '6px', flexShrink: 0 }} />
               )}
-              <div style={{ flex: 1, paddingLeft: n.read ? '16px' : '0' }}>
+              <div style={{ flex: 1, paddingLeft: n.read ? '16px' : '0', paddingRight: '16px' }}>
                 <p style={{ margin: '0 0 4px 0', fontSize: '13px', lineHeight: 1.4 }}>{n.message}</p>
                 <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{timeAgo(n.createdAt)}</span>
               </div>
+              <button
+                onClick={(e) => deleteNotification(e, n._id)}
+                title="Delete notification"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--text-secondary)',
+                  cursor: 'pointer',
+                  padding: '4px',
+                  borderRadius: '4px',
+                  opacity: 0.5,
+                  transition: 'opacity 0.2s, color 0.2s',
+                  alignSelf: 'center',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.color = '#ef4444'; }}
+                onMouseLeave={e => { e.currentTarget.style.opacity = '0.5'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
+              >
+                <X size={13} />
+              </button>
             </div>
           ))
         )}
