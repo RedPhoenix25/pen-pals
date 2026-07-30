@@ -135,6 +135,19 @@ function TiptapEditor({ doc, provider, userName, userColor, projectId }: { doc: 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [comments, setComments] = useState<any[]>([]);
 
+function getWordAtOffset(text: string, offset: number): string {
+  if (!text || text.trim() === '') return '';
+  let start = offset;
+  while (start > 0 && /\S/.test(text[start - 1])) {
+    start--;
+  }
+  let end = offset;
+  while (end < text.length && /\S/.test(text[end])) {
+    end++;
+  }
+  return text.slice(start, end).trim();
+}
+
   // Floating Timestamp Tooltip State
   const [tooltipState, setTooltipState] = useState<{
     visible: boolean;
@@ -145,6 +158,7 @@ function TiptapEditor({ doc, provider, userName, userColor, projectId }: { doc: 
   } | null>(null);
 
   const tooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const wordTimestampMapRef = useRef<Map<string, { time: number; author: string }>>(new Map());
 
   const handleCursorTimestampCheck = (editorInstance: any) => {
     if (!editorInstance) return;
@@ -153,40 +167,44 @@ function TiptapEditor({ doc, provider, userName, userColor, projectId }: { doc: 
       const { selection } = state;
       const { $from } = selection;
 
-      let timeVal: string | null = null;
+      const parentText = $from.parent.textContent || '';
+      const offset = $from.parentOffset;
+      const word = getWordAtOffset(parentText, offset);
+
+      let timeVal: number | null = null;
       let authorVal: string | null = null;
 
-      const marks = $from.marks();
-      const tsMark = marks.find((m: any) => m.type.name === 'timestampMark');
-      if (tsMark) {
-        timeVal = tsMark.attrs.time;
-        authorVal = tsMark.attrs.author;
-      } else if ($from.nodeBefore) {
-        const bMarks = $from.nodeBefore.marks || [];
-        const bTs = bMarks.find((m: any) => m.type.name === 'timestampMark');
-        if (bTs) {
-          timeVal = bTs.attrs.time;
-          authorVal = bTs.attrs.author;
+      // 1. Check timestamp in map
+      if (word && wordTimestampMapRef.current.has(word.toLowerCase())) {
+        const entry = wordTimestampMapRef.current.get(word.toLowerCase());
+        if (entry) {
+          timeVal = entry.time;
+          authorVal = entry.author;
         }
       }
 
-      let timeString = '';
-      if (timeVal) {
-        const timestamp = parseInt(timeVal, 10);
-        const date = isNaN(timestamp) ? new Date(timeVal) : new Date(timestamp);
-        if (!isNaN(date.getTime())) {
-          const timeStr = date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-          const dateStr = date.toLocaleDateString([], { month: 'short', day: 'numeric' });
-          timeString = `${timeStr} · ${dateStr}`;
-        } else {
-          timeString = timeVal;
+      // 2. Check mark attributes on node
+      if (!timeVal) {
+        const marks = $from.marks();
+        const tsMark = marks.find((m: any) => m.type.name === 'timestampMark');
+        if (tsMark?.attrs?.time) {
+          timeVal = parseInt(tsMark.attrs.time, 10);
+          authorVal = tsMark.attrs.author;
+        } else if ($from.nodeBefore) {
+          const bMarks = $from.nodeBefore.marks || [];
+          const bTs = bMarks.find((m: any) => m.type.name === 'timestampMark');
+          if (bTs?.attrs?.time) {
+            timeVal = parseInt(bTs.attrs.time, 10);
+            authorVal = bTs.attrs.author;
+          }
         }
-      } else {
-        const date = new Date();
-        const timeStr = date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-        const dateStr = date.toLocaleDateString([], { month: 'short', day: 'numeric' });
-        timeString = `${timeStr} · ${dateStr}`;
       }
+
+      // 3. Fallback to current time if no mark/map entry exists
+      const date = timeVal ? new Date(timeVal) : new Date();
+      const timeStr = date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+      const dateStr = date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+      const timeString = `${timeStr} · ${dateStr}`;
 
       const coords = view.coordsAtPos(selection.from);
       if (coords && coords.left > 0 && coords.top > 0) {
@@ -304,6 +322,20 @@ function TiptapEditor({ doc, provider, userName, userColor, projectId }: { doc: 
     onUpdate: ({ editor }) => {
       if (!activeChapterId) return;
       
+      try {
+        const { selection } = editor.state;
+        const { $from } = selection;
+        const parentText = $from.parent.textContent || '';
+        const offset = $from.parentOffset;
+        const currentWord = getWordAtOffset(parentText, offset);
+        if (currentWord) {
+          wordTimestampMapRef.current.set(currentWord.toLowerCase(), {
+            time: Date.now(),
+            author: userName
+          });
+        }
+      } catch {}
+
       const html = editor.getHTML();
       setSaveStatus('Saving...');
       
