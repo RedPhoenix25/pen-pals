@@ -76,4 +76,12 @@ This document tracks every step of the development process for the Pen Pals writ
 - **Custom Plot Cards**: Added ability to add custom plot cards via an "Add Plot Card" button.
 - **Delete Plot Cards**: Added a styled, themed modal to confirm deletion of plot cards and all nested plot plans.
 - **Inline Status Selection**: Added inline status selection (Idea, Planning, Executed) when adding new plot plans directly to a card.
-- **Inline Act Name Editing**: Double-clicking a plot card's header name allows renaming it inline.
+## 2026-07-30 - Responsive Mobile & Tablet Optimization & Notification Deletion
+- **Mobile & Tablet Responsive Styling**:
+  - **Horizontal Scrollable Toolbar**: Styled TipTap's editor toolbar to scroll horizontally on mobile screens (single-line swipeable bar matching Notion/Google Docs) instead of wrapping into multiple lines.
+  - **Top Bar Cleanup**: Added `@media (max-width: 640px)` rules to hide the Progress Bar on small phone viewports to prevent crowding, and collapsed the Export button label to an icon.
+  - **Editor Padding**: Reduced editor side padding on smaller screens from `80px 40px` to `50px 16px` for optimal reading and typing space.
+  - **Mobile Tour Button**: Scaled down and repositioned the floating Tour button for small screens so it sits cleanly in the bottom-left without obstructing text.
+  - **Mobile Sidebar Drawer**: Configured `sidebar-drawer` with higher z-index (`50`) and responsive width (`max-width: 85vw`) on touch devices.
+- **Notification Deletion & Clear All**: Added a `DELETE` endpoint to `/api/notifications` supporting single notification deletion (`X` button on hover) and a "Clear" button in the notification bell header.
+- **Real-Time Collaborator Ejection**: Configured `refreshData` to poll project authorization every 4 seconds. When a collaborator is removed by the owner, their session detects `403 Forbidden`, unmounts the Liveblocks editor room, and redirects them to the dashboard.

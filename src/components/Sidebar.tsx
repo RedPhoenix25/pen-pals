@@ -106,21 +106,25 @@ export function Sidebar({ isOpen, projectId }: { isOpen: boolean; projectId: str
   };
 
   return (
-    <div style={{
-      width: '300px',
-      backgroundColor: 'var(--bg-secondary)',
-      borderRight: '1px solid var(--border-color)',
-      transform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
-      transition: 'transform 0.3s ease',
-      display: 'flex',
-      flexDirection: 'column',
-      position: 'absolute',
-      left: 0,
-      top: 0,
-      bottom: 0,
-      zIndex: 5,
-      opacity: isOpen ? 1 : 0,
-    }}>
+    <div
+      className="sidebar-drawer"
+      style={{
+        width: '300px',
+        backgroundColor: 'var(--bg-secondary)',
+        borderRight: '1px solid var(--border-color)',
+        transform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
+        transition: 'transform 0.3s ease, opacity 0.3s ease',
+        display: 'flex',
+        flexDirection: 'column',
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        bottom: 0,
+        zIndex: 50,
+        opacity: isOpen ? 1 : 0,
+        pointerEvents: isOpen ? 'auto' : 'none',
+      }}
+    >
       <div style={{
         display: 'flex',
         borderBottom: '1px solid var(--border-color)',

@@ -34,8 +34,10 @@ export function ProgressBar() {
   };
 
   return (
-    <div style={{
-      width: '180px', // slightly narrower for top bar
+    <div
+      className="progress-bar-container"
+      style={{
+        width: '180px', // slightly narrower for top bar
       background: 'var(--bg-secondary)',
       border: '1px solid var(--border-color)',
       borderRadius: '8px',

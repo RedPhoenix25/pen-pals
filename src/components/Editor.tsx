@@ -257,14 +257,17 @@ function TiptapEditor({ doc, provider, userName, userColor, projectId }: { doc: 
       </div>
 
       {/* Minimal Static Toolbar */}
-      <div style={{ 
-        display: 'flex', 
-        gap: '4px', 
-        padding: '8px', 
-        borderBottom: '1px solid var(--border-color)',
-        marginBottom: '24px',
-        flexWrap: 'wrap'
-      }}>
+      <div 
+        className="editor-toolbar"
+        style={{ 
+          display: 'flex', 
+          gap: '4px', 
+          padding: '8px', 
+          borderBottom: '1px solid var(--border-color)',
+          marginBottom: '24px',
+          alignItems: 'center'
+        }}
+      >
         {/* Undo/Redo are disabled in collaboration mode usually, or you need yjs-undo. 
             For now, we leave them in, but they might not work perfectly without y-undo. 
             Tiptap handles it via y-undo under the hood if configured. */}

@@ -341,7 +341,7 @@ export function ExportMenu() {
         title="Export Manuscript"
         style={{ display: 'flex', gap: '8px', alignItems: 'center', padding: '8px 16px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}
       >
-        <Download size={16} /> Export
+        <Download size={16} /> <span className="export-btn-label">Export</span>
       </button>
 
       {isOpen && (

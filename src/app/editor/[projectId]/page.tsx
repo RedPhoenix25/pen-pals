@@ -24,6 +24,7 @@ function TourReplayButton() {
     <button
       onClick={startTour}
       title="Replay Tour"
+      className="tour-replay-btn"
       style={{
         position: 'fixed',
         bottom: '24px',
@@ -101,17 +102,20 @@ export default function EditorPage() {
         >
 
           {/* Top minimal nav */}
-          <div style={{
-            padding: '16px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            position: 'absolute',
-            top: 0, left: 0, right: 0,
-            zIndex: 10,
-            pointerEvents: 'none',
-          }}>
-            <div style={{ pointerEvents: 'auto', display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div
+            className="top-nav-bar"
+            style={{
+              padding: '16px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              position: 'absolute',
+              top: 0, left: 0, right: 0,
+              zIndex: 10,
+              pointerEvents: 'none',
+            }}
+          >
+            <div style={{ pointerEvents: 'auto', display: 'flex', alignItems: 'center', gap: '12px' }}>
               <button
                 className="btn-icon"
                 onClick={(e) => {
@@ -148,22 +152,25 @@ export default function EditorPage() {
           </div>
 
           {/* Editor Area */}
-          <div style={{
-            flex: 1,
-            minHeight: 0,
-            maxWidth: activeTab === 'storyboard' ? '100%' : '800px',
-            margin: '0 auto',
-            width: '100%',
-            padding: activeTab === 'storyboard' ? '60px 0 0 0' : '80px 40px',
-            overflow: activeTab === 'storyboard' ? 'hidden' : 'auto',
-            display: 'flex',
-            flexDirection: 'column',
-          }}>
+          <div
+            className="editor-container"
+            style={{
+              flex: 1,
+              minHeight: 0,
+              maxWidth: activeTab === 'storyboard' ? '100%' : '800px',
+              margin: '0 auto',
+              width: '100%',
+              padding: activeTab === 'storyboard' ? '60px 0 0 0' : '80px 40px',
+              overflow: activeTab === 'storyboard' ? 'hidden' : 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
             {activeTab === 'storyboard' ? (
               <KanbanBoard />
             ) : (
               <>
-                <h1 style={{ fontWeight: 400, color: 'var(--text-secondary)', marginBottom: '40px', textAlign: 'center' }}>
+                <h1 className="editor-chapter-title" style={{ fontWeight: 400, color: 'var(--text-secondary)', marginBottom: '40px', textAlign: 'center' }}>
                   {activeChapter ? activeChapter.title : 'No chapter selected'}
                 </h1>
                 <Editor projectId={projectId} />
