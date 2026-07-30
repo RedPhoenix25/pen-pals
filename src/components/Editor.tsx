@@ -200,8 +200,16 @@ function getWordAtOffset(text: string, offset: number): string {
         }
       }
 
-      // 3. Fallback to current time if no mark/map entry exists
-      const date = timeVal ? new Date(timeVal) : new Date();
+      // 3. Fallback to activeChapter.updatedAt if available, otherwise current date
+      let date: Date;
+      if (timeVal) {
+        date = new Date(timeVal);
+      } else if (activeChapter?.updatedAt) {
+        date = new Date(activeChapter.updatedAt);
+      } else {
+        date = new Date();
+      }
+
       const timeStr = date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
       const dateStr = date.toLocaleDateString([], { month: 'short', day: 'numeric' });
       const timeString = `${timeStr} · ${dateStr}`;

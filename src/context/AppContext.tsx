@@ -9,6 +9,7 @@ export interface Chapter {
   content: string;
   order: number;
   projectId: string;
+  updatedAt?: string;
 }
 
 export interface StoryboardEvent {
