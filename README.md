@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Pen Pals 🖊️📖
 
-## Getting Started
+> A distraction-free, minimalist collaborative novel writing platform built for authors.
 
-First, run the development server:
+**Live Application**: [https://pen-pals.onrender.com](https://pen-pals.onrender.com)
+
+---
+
+## ✨ Key Features
+
+- ✍️ **Collaborative Writing Space**: Real-time rich text editing powered by TipTap & Yjs/Liveblocks with live co-author cursors.
+- 📌 **Kanban Storyboard**: Drag-and-drop plot cards organized by Acts (Prologue, Act 1, 2, 3, Epilogue) with custom status trackers (*Idea*, *Planning*, *Executed*).
+- 👤 **Character Dossiers**: Dedicated profile management for cast members, age, traits, and relationship webs.
+- 🎯 **Daily Writing Goals**: Customizable word count targets with live progress tracking.
+- 📄 **Professional Exports**: Generate publication-ready `.pdf` and `.docx` manuscripts with custom page breaks, indents, and headers.
+- 💬 **Inline Comments & Version Snapshots**: Highlight text to add threaded comments and save named version snapshots.
+- 📱 **Mobile & Tablet Optimized**: Single-line swipeable format toolbar and responsive touch-friendly drawer layouts.
+- 🌙 **Minimalist Theme**: Warm black palette (`#171513`, `#1c1917`) tailored to prevent eye strain during long writing sessions.
+
+---
+
+## 🛠️ Tech Stack
+
+- **Framework**: Next.js 15 (App Router, TypeScript)
+- **Styling**: Vanilla CSS (Custom Design Tokens)
+- **Database**: MongoDB (Mongoose)
+- **Authentication**: NextAuth v5 (Google OAuth & Email Credentials)
+- **Collaboration**: Liveblocks & Yjs
+- **Exports**: jsPDF & docx
+
+---
+
+## 🚀 Local Setup
 
 ```bash
+# Clone the repository
+git clone https://github.com/RedPhoenix25/pen-pals.git
+
+# Install dependencies
+npm install
+
+# Set up environment variables (.env.local)
+# MONGODB_URI=...
+# AUTH_SECRET=...
+# GOOGLE_CLIENT_ID=...
+# GOOGLE_CLIENT_SECRET=...
+# NEXT_PUBLIC_LIVEBLOCKS_PUBLIC_KEY=...
+
+# Run development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
