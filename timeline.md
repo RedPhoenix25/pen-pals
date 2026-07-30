@@ -85,3 +85,4 @@ This document tracks every step of the development process for the Pen Pals writ
   - **Mobile Sidebar Drawer**: Configured `sidebar-drawer` with higher z-index (`50`) and responsive width (`max-width: 85vw`) on touch devices.
 - **Notification Deletion & Clear All**: Added a `DELETE` endpoint to `/api/notifications` supporting single notification deletion (`X` button on hover) and a "Clear" button in the notification bell header.
 - **Real-Time Collaborator Ejection**: Configured `refreshData` to poll project authorization every 4 seconds. When a collaborator is removed by the owner, their session detects `403 Forbidden`, unmounts the Liveblocks editor room, and redirects them to the dashboard.
+- **Word Timestamps**: Created `TimestampMark` TipTap extension and floating glassmorphic tooltip. When an author or collaborator places their cursor on any word, a floating pill displays the date, time, and author name for 3 seconds before automatically fading away.

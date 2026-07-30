@@ -13,12 +13,13 @@ import {
   Bold, Italic, Strikethrough, Underline as UnderlineIcon, 
   Heading2, Heading3, Quote, Undo, Redo,
   AlignLeft, AlignCenter, AlignRight, AlignJustify, Minus, Users,
-  MessageSquare, History, Trash2
+  MessageSquare, History, Trash2, Clock
 } from 'lucide-react';
 import { RoomProvider, useRoom, useOthers, ClientSideSuspense } from "@liveblocks/react/suspense";
 import { LiveblocksYjsProvider } from "@liveblocks/yjs";
 import * as Y from "yjs";
 import { CommentMark } from '@/lib/CommentMark';
+import { TimestampMark } from '@/lib/TimestampMark';
 import { VersionHistoryPanel } from './VersionHistoryPanel';
 
 const COLORS = ['#ef4444', '#f97316', '#f59e0b', '#84cc16', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#d946ef', '#f43f5e'];
@@ -134,6 +135,77 @@ function TiptapEditor({ doc, provider, userName, userColor, projectId }: { doc: 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [comments, setComments] = useState<any[]>([]);
 
+  // Floating Timestamp Tooltip State
+  const [tooltipState, setTooltipState] = useState<{
+    visible: boolean;
+    x: number;
+    y: number;
+    timeText: string;
+    authorName?: string;
+  } | null>(null);
+
+  const tooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleCursorTimestampCheck = (editorInstance: any) => {
+    if (!editorInstance) return;
+    try {
+      const { state, view } = editorInstance;
+      const { selection } = state;
+      const { $from } = selection;
+
+      let timeVal: string | null = null;
+      let authorVal: string | null = null;
+
+      const marks = $from.marks();
+      const tsMark = marks.find((m: any) => m.type.name === 'timestampMark');
+      if (tsMark) {
+        timeVal = tsMark.attrs.time;
+        authorVal = tsMark.attrs.author;
+      } else if ($from.nodeBefore) {
+        const bMarks = $from.nodeBefore.marks || [];
+        const bTs = bMarks.find((m: any) => m.type.name === 'timestampMark');
+        if (bTs) {
+          timeVal = bTs.attrs.time;
+          authorVal = bTs.attrs.author;
+        }
+      }
+
+      let timeString = '';
+      if (timeVal) {
+        const timestamp = parseInt(timeVal, 10);
+        const date = isNaN(timestamp) ? new Date(timeVal) : new Date(timestamp);
+        if (!isNaN(date.getTime())) {
+          const timeStr = date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+          const dateStr = date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+          timeString = `${timeStr} · ${dateStr}`;
+        } else {
+          timeString = timeVal;
+        }
+      } else {
+        const date = new Date();
+        const timeStr = date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+        const dateStr = date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+        timeString = `${timeStr} · ${dateStr}`;
+      }
+
+      const coords = view.coordsAtPos(selection.from);
+      if (coords && coords.left > 0 && coords.top > 0) {
+        setTooltipState({
+          visible: true,
+          x: coords.left,
+          y: coords.top - 38,
+          timeText: timeString,
+          authorName: authorVal || userName,
+        });
+
+        if (tooltipTimeoutRef.current) clearTimeout(tooltipTimeoutRef.current);
+        tooltipTimeoutRef.current = setTimeout(() => {
+          setTooltipState(prev => prev ? { ...prev, visible: false } : null);
+        }, 3000);
+      }
+    } catch {}
+  };
+
   useEffect(() => {
     if (!activeChapterId) return;
     const fetchComments = async () => {
@@ -167,6 +239,7 @@ function TiptapEditor({ doc, provider, userName, userColor, projectId }: { doc: 
         user: { name: userName, color: userColor },
       }),
       CommentMark,
+      TimestampMark,
     ],
     editorProps: {
       attributes: {
@@ -182,25 +255,40 @@ function TiptapEditor({ doc, provider, userName, userColor, projectId }: { doc: 
         if (!$from.parent.isTextblock) return false;
 
         const offset = $from.parentOffset;
-        let shouldCapitalize = false;
+        let charToInsert = text;
 
         if (offset === 0) {
-          shouldCapitalize = true;
+          charToInsert = text.toUpperCase();
         } else {
           const textBefore = $from.parent.textContent.slice(0, offset);
           if (/[.!?]['"”’)]?\s+$/.test(textBefore)) {
-            shouldCapitalize = true;
+            charToInsert = text.toUpperCase();
           }
         }
 
-        if (shouldCapitalize && text >= 'a' && text <= 'z') {
-          const tr = state.tr.insertText(text.toUpperCase(), from, to);
+        const now = Date.now().toString();
+        const markType = state.schema.marks.timestampMark;
+        const tr = state.tr;
+
+        if (markType) {
+          const mark = markType.create({ time: now, author: userName });
+          tr.insertText(charToInsert, from, to);
+          tr.addMark(from, from + charToInsert.length, mark);
+          view.dispatch(tr);
+          return true;
+        }
+
+        if (charToInsert !== text) {
+          const tr = state.tr.insertText(charToInsert, from, to);
           view.dispatch(tr);
           return true;
         }
 
         return false;
       }
+    },
+    onSelectionUpdate: ({ editor }) => {
+      handleCursorTimestampCheck(editor);
     },
     immediatelyRender: false,
     onCreate: ({ editor }) => {
@@ -520,6 +608,44 @@ function TiptapEditor({ doc, provider, userName, userColor, projectId }: { doc: 
               Add Comment
             </button>
           </div>
+        </div>
+      )}
+
+      {/* Floating Cursor Timestamp Tooltip */}
+      {tooltipState && (
+        <div
+          style={{
+            position: 'fixed',
+            top: tooltipState.y,
+            left: tooltipState.x,
+            transform: 'translateX(-50%)',
+            zIndex: 100,
+            background: 'rgba(28, 24, 22, 0.94)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            border: '1px solid rgba(214, 158, 46, 0.4)',
+            borderRadius: '6px',
+            padding: '4px 10px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            fontSize: '11px',
+            color: 'var(--text-primary)',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
+            pointerEvents: 'none',
+            opacity: tooltipState.visible ? 1 : 0,
+            transition: 'opacity 0.35s ease, transform 0.35s ease',
+          }}
+        >
+          <Clock size={11} color="rgba(214, 158, 46, 0.9)" />
+          <span>
+            {tooltipState.timeText}
+            {tooltipState.authorName && (
+              <span style={{ color: 'var(--text-secondary)', marginLeft: '4px' }}>
+                by {tooltipState.authorName}
+              </span>
+            )}
+          </span>
         </div>
       )}
 
