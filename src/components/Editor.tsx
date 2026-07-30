@@ -264,6 +264,12 @@ function getWordAtOffset(text: string, offset: number): string {
         class: 'prose prose-invert max-w-none focus:outline-none',
         style: 'line-height: 1.8; font-size: 18px; color: var(--text-primary);'
       },
+      handleClick(view) {
+        setTimeout(() => {
+          if (editor) handleCursorTimestampCheck(editor);
+        }, 50);
+        return false;
+      },
       handleTextInput(view, from, to, text) {
         if (text.length !== 1) return false;
 
@@ -304,9 +310,6 @@ function getWordAtOffset(text: string, offset: number): string {
 
         return false;
       }
-    },
-    onSelectionUpdate: ({ editor }) => {
-      handleCursorTimestampCheck(editor);
     },
     immediatelyRender: false,
     onCreate: ({ editor }) => {
