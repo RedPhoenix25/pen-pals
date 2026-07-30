@@ -240,29 +240,6 @@ function TiptapEditor({ doc, provider, userName, userColor, projectId }: { doc: 
       }, 1000);
     }
   });
-      setSaveStatus('Saving...');
-      
-      // Update local state without triggering re-renders of the editor content itself
-      setChapters(prev => prev.map(c => c._id === activeChapterId ? { ...c, content: html } : c));
-      
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
-      }
-      
-      saveTimeoutRef.current = setTimeout(async () => {
-        try {
-          await fetch(`/api/chapters/${activeChapterId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ content: html })
-          });
-          setSaveStatus('Saved just now');
-        } catch {
-          setSaveStatus('Failed to save');
-        }
-      }, 1000);
-    }
-  });
 
   if (!editor) return null;
 
